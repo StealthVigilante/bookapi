@@ -1,6 +1,7 @@
 package com.study.bookapi.service;
 
 
+import com.study.bookapi.exception.BookNotFoundException;
 import com.study.bookapi.model.Book;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ public class BookService {
                 return book;
             }
         }
-        return null;
+        throw new BookNotFoundException(id);
     }
 
     public List<Book> getAll(){
@@ -36,8 +37,8 @@ public class BookService {
         return book;
     }
 
-    public void delete(Long id){
-        books.removeIf(book -> Objects.equals(book.getId(), id));
+    public boolean delete(Long id){
+        return books.removeIf(book -> Objects.equals(book.getId(), id));
     }
 
 
