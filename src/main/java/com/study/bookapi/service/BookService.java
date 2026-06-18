@@ -3,43 +3,36 @@ package com.study.bookapi.service;
 
 import com.study.bookapi.exception.BookNotFoundException;
 import com.study.bookapi.model.Book;
+import com.study.bookapi.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class BookService {
-    private final List<Book> books;
+    private final BookRepository bookRepository;
 
-    public BookService() {
-        this.books = new ArrayList<>();
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
     }
 
     public Book getById(Long id){
-        for(Book book:books){
-            if(Objects.equals(book.getId(), id)){
-                return book;
-            }
-        }
-        throw new BookNotFoundException(id);
+        return bookRepository.findById(id).orElseThrow(()->new BookNotFoundException(id));
     }
 
     public List<Book> getAll(){
-        return books;
+        return bookRepository.findAll();
     }
 
     public Book addBook(Book book){
-        Long newId = (long) (books.size()+1);
-        book.setId(newId);
-        books.add(book);
-        return book;
+        return bookRepository.save(book);
     }
 
     public boolean delete(Long id){
-        return books.removeIf(book -> Objects.equals(book.getId(), id));
+        if(bookRepository.existsById(id)){
+            bookRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
-
-
 }
