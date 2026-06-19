@@ -7,6 +7,7 @@ import com.study.bookapi.service.BookService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -26,8 +27,8 @@ public class BookController {
     }
 
     @GetMapping
-    public List<BookResponse> getALl(){
-        List<Book> books =bookService.getAll();
+    public List<BookResponse> getALl(Authentication authentication){
+        List<Book> books =bookService.getAll(authentication.getName());
         List<BookResponse> booksResponse = new ArrayList<>();
         for(Book book:books){
             booksResponse.add(toResponse(book));
@@ -37,21 +38,22 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookResponse> getById(@PathVariable Long id){
-        Book book = bookService.getById(id);
+    public ResponseEntity<BookResponse> getById(@PathVariable Long id,Authentication authentication){
+        Book book = bookService.getById(id,authentication.getName());
         return ResponseEntity.ok(toResponse(book));
 
     }
 
     @PostMapping
-    public ResponseEntity<BookResponse> addBook(@Valid @RequestBody BookRequest request){
-        Book book = bookService.addBook(new Book(null, request.title(), request.author()));
+    public ResponseEntity<BookResponse> addBook(@Valid @RequestBody BookRequest request, Authentication authentication){
+        String username = authentication.getName();
+        Book book = bookService.addBook(request,username);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(book));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
-        if(bookService.delete(id)){
+    public ResponseEntity<Void> delete(@PathVariable Long id, Authentication authentication){
+        if(bookService.delete(id,authentication.getName())){
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
