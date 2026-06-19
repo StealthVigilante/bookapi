@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: studydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # named volume = data survives container removal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .                              # build from your Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/studydb   # <-- "db", NOT localhost
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: ThisIsADevSecretKeyForBookApiChangeMeInProductionPlease12345
+    depends_on:
+      db:
+        condition: service_healthy        # app waits until db is actually ready
+
+volumes:
+  pgdata:
